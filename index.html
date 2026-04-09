@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mavinator — le tue sbobine come ma(v)i prima d'ora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a0f;
+  --bg2: #111118;
+  --bg3: #1a1a25;
+  --surface: #16161f;
+  --surface2: #1e1e2a;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --accent: #7c6af7;
+  --accent2: #a594ff;
+  --accent3: #c4b9ff;
+  --text: #f0eeff;
+  --text2: #a09cc0;
+  --text3: #6b6888;
+  --green: #4ade80;
+  --red: #f87171;
+  --yellow: #fbbf24;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── NOISE TEXTURE OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+/* ── LAYOUT ── */
+.app { position: relative; z-index: 1; }
+
+/* ── NAVBAR ── */
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 2.5rem;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10,10,15,0.8);
+  backdrop-filter: blur(20px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.nav-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.nav-logo span {
+  color: var(--accent2);
+  font-style: italic;
+}
+.nav-badge {
+  font-size: 0.65rem;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: rgba(124,106,247,0.15);
+  border: 1px solid rgba(124,106,247,0.3);
+  color: var(--accent3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── HERO ── */
+.hero {
+  text-align: center;
+  padding: 5rem 2rem 3rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 1.5rem;
+  padding: 5px 14px;
+  border-radius: 99px;
+  border: 1px solid rgba(124,106,247,0.25);
+  background: rgba(124,106,247,0.08);
+}
+.hero-eyebrow::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+h1 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.2rem, 5vw, 3.2rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+h1 em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  color: var(--accent2);
+}
+.hero-sub {
+  font-size: 1rem;
+  color: var(--text2);
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+/* ── MAIN PANEL ── */
+.panel {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 1.5rem 4rem;
+}
+
+/* ── SECTION LABELS ── */
+.section-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── API KEY BLOCK ── */
+.api-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.api-icon {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-sm);
+  background: rgba(124,106,247,0.15);
+  border: 1px solid rgba(124,106,247,0.2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 16px;
+}
+.api-inner { flex: 1; }
+.api-title { font-size: 0.85rem; font-weight: 500; color: var(--text); margin-bottom: 0.5rem; }
+.api-title a { color: var(--accent2); text-decoration: none; }
+.api-title a:hover { text-decoration: underline; }
+.api-row { display: flex; gap: 8px; align-items: center; }
+.api-input {
+  flex: 1;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  color: var(--text);
+  font-family: 'DM Mono', 'Courier New', monospace;
+  font-size: 0.8rem;
+  outline: none;
+  transition: border-color 0.2s;
+  letter-spacing: 0.05em;
+}
+.api-input:focus { border-color: var(--accent); }
+.api-status {
+  font-size: 0.72rem;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-weight: 500;
+}
+.api-status.ok { background: rgba(74,222,128,0.12); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+.api-status.missing { background: rgba(251,191,36,0.1); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+
+/* ── GRID ── */
+.input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+@media (max-width: 620px) { .input-grid { grid-template-columns: 1fr; } }
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--border2); }
+.card-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 0.75rem;
+}
+.card-icon {
+  width: 32px; height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.card-icon.purple { background: rgba(124,106,247,0.15); border: 1px solid rgba(124,106,247,0.2); }
+.card-icon.teal { background: rgba(45,212,191,0.12); border: 1px solid rgba(45,212,191,0.2); }
+.card-title { font-size: 0.88rem; font-weight: 500; color: var(--text); }
+.card-sub { font-size: 0.72rem; color: var(--text3); margin-top: 1px; }
+
+textarea {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+  min-height: 140px;
+}
+textarea::placeholder { color: var(--text3); }
+textarea:focus { border-color: var(--accent); }
+
+/* ── UPLOAD ZONE ── */
+.upload-zone {
+  border: 1.5px dashed var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 1.2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  background: var(--bg3);
+  min-height: 120px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 6px;
+}
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--accent);
+  background: rgba(124,106,247,0.05);
+}
+.upload-zone input[type=file] {
+  position: absolute; inset: 0;
+  opacity: 0; cursor: pointer;
+  width: 100%; height: 100%;
+}
+.upload-icon-wrap {
+  width: 40px; height: 40px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.upload-label { font-size: 0.78rem; color: var(--text2); }
+.upload-label strong { display: block; color: var(--text); margin-bottom: 2px; }
+.upload-hint { font-size: 0.68rem; color: var(--text3); }
+.upload-status {
+  font-size: 0.72rem;
+  padding: 3px 10px;
+  border-radius: 99px;
+  margin-top: 4px;
+}
+.upload-status.ok { background: rgba(74,222,128,0.1); color: var(--green); }
+.upload-status.err { background: rgba(248,113,113,0.1); color: var(--red); }
+
+/* ── PROMPT EDITOR ── */
+.prompt-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+.prompt-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.9rem 1.25rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+.prompt-header:hover { background: rgba(255,255,255,0.02); }
+.prompt-header-left { display: flex; align-items: center; gap: 10px; }
+.prompt-header-title { font-size: 0.85rem; font-weight: 500; color: var(--text); }
+.prompt-header-sub { font-size: 0.7rem; color: var(--text3); margin-top: 1px; }
+.prompt-arrow {
+  font-size: 12px; color: var(--text3);
+  transition: transform 0.2s;
+}
+.prompt-arrow.open { transform: rotate(180deg); }
+.prompt-body { display: none; padding: 0 1.25rem 1.25rem; }
+.prompt-body.open { display: block; }
+.prompt-body textarea { min-height: 200px; font-size: 0.78rem; }
+.prompt-reset {
+  margin-top: 0.5rem;
+  font-size: 0.72rem;
+  color: var(--text3);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+.prompt-reset:hover { color: var(--accent2); }
+
+/* ── GENERATE BUTTON ── */
+.btn-generate {
+  width: 100%;
+  padding: 1rem;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+.btn-generate::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0);
+  transition: background 0.15s;
+}
+.btn-generate:hover:not(:disabled)::after { background: rgba(255,255,255,0.08); }
+.btn-generate:disabled {
+  background: var(--surface2);
+  color: var(--text3);
+  cursor: not-allowed;
+  border: 1px solid var(--border);
+}
+
+/* ── PROGRESS ── */
+.progress-wrap {
+  display: none;
+  margin-bottom: 1.5rem;
+}
+.progress-wrap.active { display: block; }
+.progress-steps {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 0.75rem;
+}
+.progress-step {
+  flex: 1;
+  height: 3px;
+  border-radius: 99px;
+  background: var(--border2);
+  transition: background 0.4s;
+}
+.progress-step.done { background: var(--accent); }
+.progress-step.active { background: var(--accent2); animation: shimmer 1.2s infinite; }
+@keyframes shimmer {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.progress-label { font-size: 0.78rem; color: var(--text2); font-style: italic; }
+
+/* ── OUTPUT AREA ── */
+.output-area { display: none; }
+.output-area.visible { display: block; }
+
+.output-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+  border-bottom: none;
+}
+.output-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+.output-title::before {
+  content: '';
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+}
+.output-actions { display: flex; gap: 8px; }
+.btn-action {
+  padding: 0.4rem 0.9rem;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text2);
+  font-size: 0.75rem;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex; align-items: center; gap: 5px;
+}
+.btn-action:hover { border-color: var(--accent); color: var(--accent2); }
+
+/* ── SBOBINA (book-style output) ── */
+.sbobina {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 3rem 3.5rem;
+}
+@media (max-width: 620px) { .sbobina { padding: 1.5rem; } }
+
+.sbobina-title-block {
+  text-align: center;
+  padding-bottom: 2.5rem;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.sbobina-materia {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--accent2);
+  margin-bottom: 0.75rem;
+}
+.sbobina-h1 {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--text);
+  margin-bottom: 0.75rem;
+}
+.sbobina-sottotitolo {
+  font-size: 0.9rem;
+  color: var(--text2);
+  font-style: italic;
+}
+
+.sbobina-section { margin-bottom: 3rem; }
+.sbobina-section-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text);
+  margin-bottom: 1.25rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--accent);
+}
+
+/* Block: text + figure side by side */
+.sbobina-block {
+  margin-bottom: 2rem;
+}
+.sbobina-block-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+.sbobina-block-inner.text-only {
+  grid-template-columns: 1fr;
+}
+@media (max-width: 580px) {
+  .sbobina-block-inner { grid-template-columns: 1fr; }
+}
+.sbobina-block-inner.flip .sbobina-figure { order: -1; }
+
+.sbobina-para {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.92rem;
+  line-height: 1.85;
+  color: var(--text2);
+  text-align: justify;
+  hyphens: auto;
+}
+.sbobina-para + .sbobina-para { margin-top: 0.8rem; text-indent: 1.2em; }
+
+.sbobina-figure {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.sbobina-figure img {
+  width: 100%; display: block;
+  max-height: 220px; object-fit: contain;
+  padding: 0.5rem;
+}
+.sbobina-caption {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.7rem;
+  color: var(--text3);
+  font-style: italic;
+  border-top: 1px solid var(--border);
+}
+
+/* Concetti chiave box */
+.sbobina-concepts {
+  background: rgba(124,106,247,0.06);
+  border: 1px solid rgba(124,106,247,0.18);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+.sbobina-concepts-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent2);
+  margin-bottom: 0.6rem;
+}
+.sbobina-concepts ul {
+  list-style: none;
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.sbobina-concepts ul li {
+  font-size: 0.75rem;
+  color: var(--accent3);
+  padding: 3px 10px;
+  background: rgba(124,106,247,0.1);
+  border: 1px solid rgba(124,106,247,0.2);
+  border-radius: 99px;
+}
+
+/* Domande box */
+.sbobina-questions {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1.25rem;
+  margin-top: 2.5rem;
+}
+.sbobina-questions-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text3);
+  margin-bottom: 1rem;
+}
+.sbobina-questions ol {
+  padding-left: 1.2rem;
+  display: flex; flex-direction: column; gap: 0.6rem;
+}
+.sbobina-questions ol li {
+  font-size: 0.85rem;
+  color: var(--text2);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.sbobina-footer {
+  text-align: center;
+  padding-top: 2.5rem;
+  margin-top: 2.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.7rem;
+  color: var(--text3);
+  letter-spacing: 0.08em;
+}
+.sbobina-footer span { color: var(--accent); }
+
+/* ── FOOTER ── */
+.site-footer {
+  text-align: center;
+  padding: 2rem;
+  font-size: 0.72rem;
+  color: var(--text3);
+  border-top: 1px solid var(--border);
+}
+
+/* ── PRINT STYLES ── */
+@media print {
+  nav, .panel > *:not(.output-area), .output-topbar { display: none !important; }
+  body { background: white; color: #111; }
+  .sbobina { background: white; border: none; padding: 2rem; color: #111; }
+  .sbobina-h1 { color: #111; }
+  .sbobina-para { color: #333; }
+  .sbobina-section-title { color: #111; border-color: #7c6af7; }
+  .sbobina-figure { border: 1px solid #ddd; }
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.5s ease both; }
+.fade-up-1 { animation-delay: 0.05s; }
+.fade-up-2 { animation-delay: 0.1s; }
+.fade-up-3 { animation-delay: 0.15s; }
+.fade-up-4 { animation-delay: 0.2s; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Mavi<span>nator</span></div>
+  <div class="nav-badge">Beta</div>
+</nav>
+
+<!-- HERO -->
+<div class="hero fade-up">
+  <div class="hero-eyebrow">Powered by Claude AI</div>
+  <h1>Le tue sbobine come<br><em>ma(v)i</em> prima d'ora</h1>
+  <p class="hero-sub">Incolla la trascrizione della lezione, carica le slide: Mavinator le fonde in un elaborato leggibile, fluido e ben strutturato.</p>
+</div>
+
+<!-- PANEL -->
+<div class="panel">
+
+  <!-- API KEY -->
+  <div class="section-label fade-up fade-up-1">Configurazione</div>
+  <div class="api-block fade-up fade-up-1">
+    <div class="api-icon">🔑</div>
+    <div class="api-inner">
+      <div class="api-title">API Key di Anthropic — <a href="https://console.anthropic.com" target="_blank">ottienila gratis su console.anthropic.com</a></div>
+      <div class="api-row">
+        <input type="password" class="api-input" id="api-key" placeholder="sk-ant-api03-..." autocomplete="off" oninput="onApiKeyChange()">
+        <div class="api-status missing" id="api-status">Richiesta</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INPUT GRID -->
+  <div class="section-label fade-up fade-up-2">Contenuto lezione</div>
+  <div class="input-grid fade-up fade-up-2">
+
+    <!-- TRASCRIZIONE -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon purple">📝</div>
+        <div>
+          <div class="card-title">Trascrizione</div>
+          <div class="card-sub">Incolla il testo della lezione</div>
+        </div>
+      </div>
+      <textarea id="transcript" placeholder="Incolla qui la trascrizione parola per parola della lezione...&#10;&#10;Es: «Allora, come dicevamo la volta scorsa, il sistema nervoso è diviso in...»"></textarea>
+    </div>
+
+    <!-- SLIDE -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon teal">🖼</div>
+        <div>
+          <div class="card-title">Slide</div>
+          <div class="card-sub">PDF o immagini PNG/JPG</div>
+        </div>
+      </div>
+      <div class="upload-zone" id="slide-zone">
+        <input type="file" id="slide-input" accept=".pdf,image/png,image/jpeg,image/jpg,image/webp" multiple>
+        <div class="upload-icon-wrap">📎</div>
+        <div class="upload-label">
+          <strong>Carica PDF o immagini</strong>
+          Trascina qui o clicca per selezionare
+        </div>
+        <div class="upload-hint">PDF · PNG · JPG · WEBP — più file supportati</div>
+        <div class="upload-status" id="slide-status" style="display:none"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PROMPT EDITOR -->
+  <div class="section-label fade-up fade-up-3">Istruzioni per Claude</div>
+  <div class="prompt-card fade-up fade-up-3">
+    <div class="prompt-header" onclick="togglePrompt()">
+      <div class="prompt-header-left">
+        <div class="card-icon purple" style="width:28px;height:28px;font-size:13px;">⚙️</div>
+        <div>
+          <div class="prompt-header-title">Prompt di rielaborazione</div>
+          <div class="card-sub">Clicca per modificare le istruzioni che riceve Claude</div>
+        </div>
+      </div>
+      <div class="prompt-arrow" id="prompt-arrow">▼</div>
+    </div>
+    <div class="prompt-body" id="prompt-body">
+      <textarea id="prompt-text" style="min-height:220px;font-size:0.78rem;"></textarea>
+      <button class="prompt-reset" onclick="resetPrompt()">↺ Ripristina prompt originale</button>
+    </div>
+  </div>
+
+  <!-- OPTIONS ROW -->
+  <div style="display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;" class="fade-up fade-up-3">
+    <label style="display:flex;align-items:center;gap:6px;font-size:0.78rem;color:var(--text2);cursor:pointer;">
+      <input type="checkbox" id="opt-concepts" checked style="accent-color:var(--accent);">
+      Box concetti chiave
+    </label>
+    <label style="display:flex;align-items:center;gap:6px;font-size:0.78rem;color:var(--text2);cursor:pointer;">
+      <input type="checkbox" id="opt-questions" checked style="accent-color:var(--accent);">
+      Domande di ripasso
+    </label>
+    <label style="display:flex;align-items:center;gap:6px;font-size:0.78rem;color:var(--text2);cursor:pointer;">
+      Dettaglio:
+      <select id="opt-detail" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:3px 8px;color:var(--text);font-size:0.75rem;font-family:inherit;outline:none;">
+        <option value="completo">Completo</option>
+        <option value="sintetico">Sintetico</option>
+        <option value="approfondito">Approfondito</option>
+      </select>
+    </label>
+  </div>
+
+  <!-- GENERATE -->
+  <button class="btn-generate fade-up fade-up-4" id="btn-generate" disabled onclick="generate()">
+    ✦ &nbsp; Genera la sbobina
+  </button>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-steps">
+      <div class="progress-step" id="ps1"></div>
+      <div class="progress-step" id="ps2"></div>
+      <div class="progress-step" id="ps3"></div>
+      <div class="progress-step" id="ps4"></div>
+    </div>
+    <div class="progress-label" id="progress-label">Preparazione...</div>
+  </div>
+
+  <!-- OUTPUT -->
+  <div class="output-area" id="output-area">
+    <div class="output-topbar">
+      <div class="output-title">Sbobina pronta</div>
+      <div class="output-actions">
+        <button class="btn-action" onclick="window.print()">🖨 Stampa / Salva PDF</button>
+        <button class="btn-action" onclick="copyAll()">📋 Copia tutto</button>
+        <button class="btn-action" onclick="downloadHTML()">⬇ Scarica HTML</button>
+      </div>
+    </div>
+    <div class="sbobina" id="sbobina-content"></div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  Mavinator · costruito con <span>♥</span> usando Claude API · la tua API key non lascia mai il tuo browser
+</footer>
+
+</div>
+
+<!-- PDF.js worker -->
+<script>
+if (typeof pdfjsLib !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+</script>
+
+<script>
+const DEFAULT_PROMPT = `Sei uno studente universitario brillante che ha appena trascritto una lezione e ora la sta rielaborando per creare degli appunti definitivi da libro.
+
+Il tuo compito è rielaborare la trascrizione fornita seguendo queste regole:
+
+- FORMA: migliora grammatica, punteggiatura e fluidità. Elimina le ripetizioni, le esitazioni e i costrutti tipici del parlato. Le frasi devono scorrere come testo scritto accademico.
+- CONTENUTO: non aggiungere né rimuovere informazioni. Tutto ciò che il professore ha detto deve restare, niente di più.
+- REGISTRO: mantieni il registro del professore — formale ma non freddo. Se il professore usa terminologia tecnica specifica, conservala. Se semplifica un concetto con un esempio, tienilo.
+- CHIAREZZA: quando un concetto è ostico, riformulalo in modo più chiaro senza banalizzarlo.
+- SLIDE: integra le immagini e le informazioni delle slide nel testo in modo naturale, come se fossero illustrazioni di un libro — associa ogni slide al punto della lezione a cui si riferisce.
+- STRUTTURA: organizza il testo in sezioni con titoli chiari basati sullo sviluppo logico della lezione.`;
+
+const state = {
+  apiKey: '',
+  slideImages: [],
+  generating: false
+};
+
+// Init prompt
+document.getElementById('prompt-text').value = DEFAULT_PROMPT;
+
+// ── API KEY ──
+function onApiKeyChange() {
+  const val = document.getElementById('api-key').value.trim();
+  state.apiKey = val;
+  const statusEl = document.getElementById('api-status');
+  if (val.startsWith('sk-ant')) {
+    statusEl.textContent = 'Salvata';
+    statusEl.className = 'api-status ok';
+  } else {
+    statusEl.textContent = 'Richiesta';
+    statusEl.className = 'api-status missing';
+  }
+  checkReady();
+}
+
+// ── PROMPT TOGGLE ──
+function togglePrompt() {
+  const body = document.getElementById('prompt-body');
+  const arrow = document.getElementById('prompt-arrow');
+  const open = body.classList.toggle('open');
+  arrow.classList.toggle('open', open);
+}
+function resetPrompt() {
+  document.getElementById('prompt-text').value = DEFAULT_PROMPT;
+}
+
+// ── SLIDES ──
+document.getElementById('slide-input').addEventListener('change', async (e) => {
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+  const statusEl = document.getElementById('slide-status');
+  statusEl.style.display = 'block';
+  statusEl.textContent = 'Elaborazione...';
+  statusEl.className = 'upload-status';
+  try {
+    state.slideImages = await extractAllImages(files);
+    statusEl.textContent = `✓ ${state.slideImages.length} slide caricate`;
+    statusEl.className = 'upload-status ok';
+  } catch(err) {
+    statusEl.textContent = '✗ ' + err.message;
+    statusEl.className = 'upload-status err';
+  }
+  checkReady();
+});
+
+// Drag & drop
+const zone = document.getElementById('slide-zone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+zone.addEventListener('drop', async e => {
+  e.preventDefault();
+  zone.classList.remove('dragover');
+  const files = Array.from(e.dataTransfer.files);
+  if (files.length) {
+    document.getElementById('slide-input').files; // can't set directly
+    const statusEl = document.getElementById('slide-status');
+    statusEl.style.display = 'block';
+    statusEl.textContent = 'Elaborazione...';
+    statusEl.className = 'upload-status';
+    try {
+      state.slideImages = await extractAllImages(files);
+      statusEl.textContent = `✓ ${state.slideImages.length} slide caricate`;
+      statusEl.className = 'upload-status ok';
+    } catch(err) {
+      statusEl.textContent = '✗ ' + err.message;
+      statusEl.className = 'upload-status err';
+    }
+    checkReady();
+  }
+});
+
+async function extractAllImages(files) {
+  const images = [];
+  for (const file of files) {
+    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+      const imgs = await pdfToImages(file);
+      images.push(...imgs);
+    } else if (file.type.startsWith('image/')) {
+      const b64 = await fileToBase64(file);
+      images.push({ base64: b64.split(',')[1], type: file.type, name: file.name });
+    }
+  }
+  return images;
+}
+
+async function pdfToImages(file) {
+  const ab = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+  const images = [];
+  const maxPages = Math.min(pdf.numPages, 25); // cap at 25 slides
+  for (let i = 1; i <= maxPages; i++) {
+    const page = await pdf.getPage(i);
+    const vp = page.getViewport({ scale: 1.6 });
+    const canvas = document.createElement('canvas');
+    canvas.width = vp.width; canvas.height = vp.height;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+    images.push({ base64: dataUrl.split(',')[1], type: 'image/jpeg', name: `Slide ${i}` });
+  }
+  return images;
+}
+
+function fileToBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = () => rej(new Error('Lettura file fallita'));
+    r.readAsDataURL(file);
+  });
+}
+
+// ── READY CHECK ──
+function checkReady() {
+  const hasKey = state.apiKey.startsWith('sk-ant');
+  const hasTranscript = document.getElementById('transcript').value.trim().length > 50;
+  const hasSlides = state.slideImages.length > 0;
+  document.getElementById('btn-generate').disabled = !(hasKey && hasTranscript && hasSlides);
+}
+document.getElementById('transcript').addEventListener('input', checkReady);
+
+// ── PROGRESS ──
+function setStep(step, label) {
+  ['ps1','ps2','ps3','ps4'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.className = 'progress-step';
+    if (i < step - 1) el.classList.add('done');
+    else if (i === step - 1) el.classList.add('active');
+  });
+  document.getElementById('progress-label').textContent = label;
+}
+
+// ── GENERATE ──
+async function generate() {
+  if (state.generating) return;
+  state.generating = true;
+
+  const progWrap = document.getElementById('progress-wrap');
+  progWrap.classList.add('active');
+  document.getElementById('btn-generate').disabled = true;
+  document.getElementById('output-area').classList.remove('visible');
+
+  const transcript = document.getElementById('transcript').value.trim();
+  const userPrompt = document.getElementById('prompt-text').value.trim();
+  const withConcepts = document.getElementById('opt-concepts').checked;
+  const withQuestions = document.getElementById('opt-questions').checked;
+  const detail = document.getElementById('opt-detail').value;
+
+  try {
+    setStep(1, 'Preparazione contenuto...');
+    await sleep(300);
+
+    setStep(2, 'Invio a Claude per rielaborazione...');
+    const result = await callClaude(transcript, state.slideImages, userPrompt, withConcepts, withQuestions, detail);
+
+    setStep(3, 'Analisi della risposta...');
+    await sleep(200);
+
+    setStep(4, 'Impaginazione finale...');
+    await sleep(200);
+
+    renderSbobina(result, state.slideImages);
+    progWrap.classList.remove('active');
+    document.getElementById('output-area').classList.add('visible');
+    document.getElementById('output-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } catch(err) {
+    progWrap.classList.remove('active');
+    alert('Errore: ' + err.message);
+    console.error(err);
+    document.getElementById('btn-generate').disabled = false;
+  }
+
+  state.generating = false;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ── CALL CLAUDE ──
+async function callClaude(transcript, slides, userPrompt, withConcepts, withQuestions, detail) {
+  const maxSlides = Math.min(slides.length, 18);
+  const content = [];
+
+  // Add slides
+  for (let i = 0; i < maxSlides; i++) {
+    content.push({ type: 'image', source: { type: 'base64', media_type: slides[i].type, data: slides[i].base64 } });
+    content.push({ type: 'text', text: `[Slide ${i + 1}: "${slides[i].name}"]` });
+  }
+
+  const optStr = [
+    withConcepts ? 'Includi un array "concetti_chiave" per ogni sezione (massimo 5 voci).' : 'Ometti "concetti_chiave".',
+    withQuestions ? 'Includi 5 "domande_ripasso" alla fine.' : 'Ometti "domande_ripasso".',
+    `Livello di dettaglio: ${detail}.`
+  ].join(' ');
+
+  content.push({
+    type: 'text',
+    text: `
+TRASCRIZIONE DELLA LEZIONE:
+---
+${transcript}
+---
+
+ISTRUZIONI:
+${userPrompt}
+
+${optStr}
+
+Rispondi ESCLUSIVAMENTE con un oggetto JSON valido, nessun testo fuori dal JSON, nessun markdown. Struttura richiesta:
+{
+  "materia": "Nome della materia (deducilo dal contesto)",
+  "titolo": "Titolo principale della lezione",
+  "sottotitolo": "Breve descrizione dell'argomento trattato",
+  "sezioni": [
+    {
+      "titolo": "Titolo sezione",
+      "blocchi": [
+        {
+          "testo": "Paragrafo rielaborato, lungo e fluido (minimo 5 frasi). Testo accademico e scorrevole.",
+          "slide_ref": 1,
+          "caption": "Breve didascalia descrittiva della slide associata"
+        }
+      ],
+      "concetti_chiave": ["Concetto 1", "Concetto 2"]
+    }
+  ],
+  "domande_ripasso": ["Domanda 1?", "Domanda 2?"]
+}
+
+Nota: slide_ref è il numero della slide (1-${maxSlides}) più pertinente a quel paragrafo. Ogni blocco deve fare riferimento a una slide reale presente tra quelle fornite.
+`
+  });
+
+  const resp = await fetch('/.netlify/functions/claude', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': state.apiKey
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-5',
+      max_tokens: 4096,
+      messages: [{ role: 'user', content }]
+    })
+  });
+
+  if (!resp.ok) {
+    const errData = await resp.json().catch(() => ({}));
+    throw new Error(errData.error?.message || `Errore HTTP ${resp.status}`);
+  }
+
+  const data = await resp.json();
+  const raw = data.content.map(b => b.text || '').join('');
+  const clean = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+
+  try {
+    return JSON.parse(clean);
+  } catch(e) {
+    const m = clean.match(/\{[\s\S]*\}/);
+    if (m) return JSON.parse(m[0]);
+    throw new Error('Risposta non valida da Claude. Riprova o modifica il prompt.');
+  }
+}
+
+// ── RENDER ──
+function renderSbobina(data, slides) {
+  const el = document.getElementById('sbobina-content');
+  let html = '';
+
+  // Title block
+  html += `<div class="sbobina-title-block">
+    <div class="sbobina-materia">${esc(data.materia || 'Appunti universitari')}</div>
+    <h1 class="sbobina-h1">${esc(data.titolo || 'Sbobina')}</h1>
+    ${data.sottotitolo ? `<div class="sbobina-sottotitolo">${esc(data.sottotitolo)}</div>` : ''}
+  </div>`;
+
+  // Sections
+  (data.sezioni || []).forEach((sez) => {
+    html += `<div class="sbobina-section">`;
+    html += `<div class="sbobina-section-title">${esc(sez.titolo)}</div>`;
+
+    (sez.blocchi || []).forEach((blocco, bi) => {
+      const slideIdx = Math.max(0, Math.min((blocco.slide_ref || 1) - 1, slides.length - 1));
+      const slide = slides[slideIdx];
+      const flip = bi % 2 !== 0;
+
+      html += `<div class="sbobina-block">
+        <div class="sbobina-block-inner${slide ? (flip ? ' flip' : '') : ' text-only'}">
+          <div class="sbobina-para">${esc(blocco.testo)}</div>
+          ${slide ? `
+          <figure class="sbobina-figure">
+            <img src="data:${slide.type};base64,${slide.base64}" alt="${esc(slide.name)}" loading="lazy">
+            <figcaption>${esc(blocco.caption || slide.name)}</figcaption>
+          </figure>` : ''}
+        </div>
+      </div>`;
+    });
+
+    if (sez.concetti_chiave && sez.concetti_chiave.length) {
+      html += `<div class="sbobina-concepts">
+        <div class="sbobina-concepts-title">Concetti chiave</div>
+        <ul>${sez.concetti_chiave.map(c => `<li>${esc(c)}</li>`).join('')}</ul>
+      </div>`;
+    }
+
+    html += `</div>`;
+  });
+
+  // Questions
+  if (data.domande_ripasso && data.domande_ripasso.length) {
+    html += `<div class="sbobina-questions">
+      <div class="sbobina-questions-title">Domande di auto-verifica</div>
+      <ol>${data.domande_ripasso.map(q => `<li>${esc(q)}</li>`).join('')}</ol>
+    </div>`;
+  }
+
+  // Footer
+  html += `<div class="sbobina-footer">Rielaborato con <span>Mavinator</span> · generato da Claude AI</div>`;
+
+  el.innerHTML = html;
+}
+
+function esc(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/\n\n/g, '</p><p class="sbobina-para" style="text-indent:1.2em">');
+}
+
+// ── EXPORT ──
+function copyAll() {
+  const text = document.getElementById('sbobina-content').innerText;
+  navigator.clipboard.writeText(text)
+    .then(() => alert('Testo copiato negli appunti!'))
+    .catch(() => alert('Seleziona manualmente il testo per copiarlo.'));
+}
+
+function downloadHTML() {
+  const sbobina = document.getElementById('sbobina-content').outerHTML;
+  const fullHTML = `<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sbobina — Mavinator</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0f;color:#f0eeff;font-family:'DM Sans',sans-serif;padding:2rem;max-width:900px;margin:0 auto}
+.sbobina{background:#16161f;border-radius:14px;padding:3rem}
+.sbobina-title-block{text-align:center;padding-bottom:2rem;margin-bottom:2rem;border-bottom:1px solid rgba(255,255,255,0.07)}
+.sbobina-materia{font-size:.7rem;text-transform:uppercase;letter-spacing:.14em;color:#a594ff;margin-bottom:.75rem}
+.sbobina-h1{font-family:'Instrument Serif',serif;font-size:2.2rem;color:#f0eeff;margin-bottom:.5rem}
+.sbobina-sottotitolo{font-size:.9rem;color:#a09cc0;font-style:italic}
+.sbobina-section{margin-bottom:2.5rem}
+.sbobina-section-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#f0eeff;margin-bottom:1rem;padding-left:.75rem;border-left:2px solid #7c6af7}
+.sbobina-block{margin-bottom:1.5rem}
+.sbobina-block-inner{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start}
+.sbobina-block-inner.text-only{grid-template-columns:1fr}
+.sbobina-block-inner.flip .sbobina-figure{order:-1}
+.sbobina-para{font-size:.9rem;line-height:1.85;color:#a09cc0;text-align:justify}
+.sbobina-figure{background:#1a1a25;border:1px solid rgba(255,255,255,0.1);border-radius:8px;overflow:hidden}
+.sbobina-figure img{width:100%;display:block;max-height:220px;object-fit:contain;padding:.5rem}
+.sbobina-caption{padding:.4rem .75rem;font-size:.7rem;color:#6b6888;font-style:italic;border-top:1px solid rgba(255,255,255,0.06)}
+.sbobina-concepts{background:rgba(124,106,247,.06);border:1px solid rgba(124,106,247,.18);border-radius:8px;padding:1rem;margin:1.5rem 0}
+.sbobina-concepts-title{font-family:'Syne',sans-serif;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#a594ff;margin-bottom:.5rem}
+.sbobina-concepts ul{list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.sbobina-concepts ul li{font-size:.75rem;color:#c4b9ff;padding:3px 10px;background:rgba(124,106,247,.1);border:1px solid rgba(124,106,247,.2);border-radius:99px}
+.sbobina-questions{background:#1e1e2a;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:1.25rem;margin-top:2rem}
+.sbobina-questions-title{font-family:'Syne',sans-serif;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#6b6888;margin-bottom:.75rem}
+.sbobina-questions ol{padding-left:1.2rem;display:flex;flex-direction:column;gap:.5rem}
+.sbobina-questions ol li{font-size:.85rem;color:#a09cc0;font-style:italic}
+.sbobina-footer{text-align:center;padding-top:2rem;margin-top:2rem;border-top:1px solid rgba(255,255,255,0.07);font-size:.7rem;color:#6b6888}
+.sbobina-footer span{color:#7c6af7}
+</style>
+</head>
+<body>${sbobina}</body>
+</html>`;
+
+  const blob = new Blob([fullHTML], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sbobina-mavinator.html';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
